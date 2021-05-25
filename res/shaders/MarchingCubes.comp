@@ -1,0 +1,93 @@
+#version 460 core
+
+const int leftCornerFromEdge[12] = {0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3};
+const int rightCornerFromEdge[12] = {1, 2, 3, 0, 5, 6, 7, 4, 4, 5, 6, 7};
+
+struct Triangle
+{
+	vec4 points[3];
+};
+
+layout(std430, binding = 4) writeonly buffer TriangleBuffer
+{
+	Triangle triangles[];
+};
+
+
+layout(std430, binding = 5) readonly buffer DensityBuffer
+{
+	float densities[];
+};
+
+layout(binding = 6) uniform atomic_uint TriCounter;
+
+layout(std430, binding = 7) readonly buffer TriLUTBuffer
+{
+	int triangleLUT[256][16];
+};
+
+layout(local_size_x = 10, local_size_y = 10, local_size_z = 10) in;
+
+uniform float isoValue;
+
+vec4 makeCell(uint base, uint xOffset, uint yOffset, uint zOffset)
+{
+	uvec3 computeDim = gl_NumWorkGroups * gl_WorkGroupSize;
+	uint idx = base + xOffset +
+	yOffset * computeDim.x +
+	zOffset * computeDim.x * computeDim.y;
+	return vec4(gl_GlobalInvocationID + uvec3(xOffset, yOffset, zOffset), densities[idx]);
+}
+
+vec4 interpolateVerts(vec4 v1, vec4 v2) {
+	float t = (isoValue - v1.w) / (v2.w - v1.w);
+	return vec4(v1.xyz + t * (v2.xyz - v1.xyz), 1.0);
+}
+
+void main()
+{
+	uvec3 computeDim = gl_NumWorkGroups * gl_WorkGroupSize;
+	
+	uint idx =  gl_GlobalInvocationID.z * computeDim.x * computeDim.y +
+	gl_GlobalInvocationID.y * computeDim.x +
+	gl_GlobalInvocationID.x;
+	
+	vec4 cell[8];
+	
+	cell[0] = makeCell(idx, 0, 0, 0);
+	cell[1] = makeCell(idx, 1, 0, 0);
+	cell[2] = makeCell(idx, 1, 1, 0);
+	cell[3] = makeCell(idx, 0, 1, 0);
+	cell[4] = makeCell(idx, 0, 0, 1);
+	cell[5] = makeCell(idx, 1, 0, 1);
+	cell[6] = makeCell(idx, 1, 1, 1);
+	cell[7] = makeCell(idx, 0, 1, 1);
+	
+	int cubeIndex = 0;
+	
+	for (int i = 0; i < 8; ++i)
+	{
+		if (cell[i].w < isoValue)
+		{
+			cubeIndex |= 1 << i;
+		}
+	}
+	
+	for (int i = 0; triangleLUT[cubeIndex][i] != -1; i += 3) {
+		int a0 = leftCornerFromEdge[triangleLUT[cubeIndex][i]];
+		int b0 = rightCornerFromEdge[triangleLUT[cubeIndex][i]];
+		
+		int a1 = leftCornerFromEdge[triangleLUT[cubeIndex][i + 1]];
+		int b1 = rightCornerFromEdge[triangleLUT[cubeIndex][i + 1]];
+		
+		int a2 = leftCornerFromEdge[triangleLUT[cubeIndex][i + 2]];
+		int b2 = rightCornerFromEdge[triangleLUT[cubeIndex][i + 2]];
+		
+		Triangle tri;
+		tri.points[0] = interpolateVerts(cell[a0], cell[b0]);
+		tri.points[1] = interpolateVerts(cell[a1], cell[b1]);
+		tri.points[2] = interpolateVerts(cell[a2], cell[b2]);
+		
+		triangles[atomicCounterIncrement(TriCounter)] = tri;
+	}
+}
