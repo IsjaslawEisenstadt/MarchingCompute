@@ -57,7 +57,7 @@ using TriLUTBuffer = Buffer<GL_SHADER_STORAGE_BUFFER, int[16], GL_STATIC_DRAW>;
 using IndirectBuffer =
 	Buffer<GL_DRAW_INDIRECT_BUFFER, DrawArraysIndirectCommand, GL_DYNAMIC_COPY>;
 
-#define MC_DIM 50
+#define MC_DIM 100
 
 class VoxelMesh
 {
@@ -240,13 +240,10 @@ private:
 		mcShader->SetMat4("projection", m_Projection);
 		mcShader->SetMat4("view", m_View);
 
-		mcShader->SetVec3("material.objectColor", glm::vec3(1.0f, 0.65f, 0.0f));
-		mcShader->SetFloat("material.shininess", 16.0f);
-		mcShader->SetVec3("viewPos", m_Camera->GetPosition());
-		mcShader->SetVec3("dirLight.direction", glm::vec3(0.0f, 1.0f, 0.0f));
-		mcShader->SetVec3("dirLight.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
-		mcShader->SetVec3("dirLight.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
-		mcShader->SetVec3("dirLight.specular", glm::vec3(0.6f, 0.6f, 0.6f));
+		mcShader->SetVec3("objectColor", glm::vec3(1.0f, 0.65f, 0.0f));
+		mcShader->SetVec3("dirLight.direction", glm::vec3(0.5f, 1.0f, 0.2f));
+		mcShader->SetVec3("dirLight.ambient", glm::vec3(0.15f, 0.15f, 0.15f));
+		mcShader->SetVec3("dirLight.diffuse", glm::vec3(0.4f, 0.4f, 0.4f));
 
 		triangleBuffer->Bind();
 		indirectBuffer->Bind();

@@ -1,5 +1,7 @@
 #version 460 core
 
+#define LOCAL_DIM 10
+
 const int leftCornerFromEdge[12] = { 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3 };
 const int rightCornerFromEdge[12] = { 1, 2, 3, 0, 5, 6, 7, 4, 4, 5, 6, 7 };
 
@@ -27,7 +29,7 @@ layout(std430, binding = 7) readonly buffer TriLUTBuffer
 	int triangleLUT[256][16];
 };
 
-layout(local_size_x = 10, local_size_y = 10, local_size_z = 10) in;
+layout(local_size_x = LOCAL_DIM, local_size_y = LOCAL_DIM, local_size_z = LOCAL_DIM) in;
 
 uniform float isoValue;
 
@@ -42,6 +44,16 @@ vec4 makeCell(uint base, uint xOffset, uint yOffset, uint zOffset)
 
 vec4 interpolateVerts(vec4 v1, vec4 v2) {
 	float t = (isoValue - v1.w) / (v2.w - v1.w);
+	
+	if (t <= 0.05)
+	{
+		t = 0.0;
+	}
+	else if (t >= 0.95)
+	{
+		t = 1.0;
+	}
+	
 	return vec4(v1.xyz + t * (v2.xyz - v1.xyz), 1.0);
 }
 
