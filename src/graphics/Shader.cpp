@@ -103,7 +103,10 @@ int Shader::GetUniformLocation(const std::string &name)
 		return m_UniformLocationCache[name];
 
 	m_UniformLocationCache[name] = glGetUniformLocation(m_Handle, name.c_str());
-	assert(m_UniformLocationCache[name] != -1);
+	if (m_UniformLocationCache[name] == -1)
+	{
+		std::cerr << "Uniform " << name << " not found\n";
+	}
 	return m_UniformLocationCache[name];
 }
 
