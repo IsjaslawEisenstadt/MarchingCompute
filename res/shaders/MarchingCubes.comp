@@ -90,12 +90,11 @@ void main()
 		tri.points[2] = interpolateVerts(cell[a2], cell[b2]);
 		
 		vec3 normal = normalize(
-				cross((tri.points[1] - tri.points[0]).xyz, (tri.points[2] - tri.points[0]).xyz));
+		cross((tri.points[1] - tri.points[0]).xyz, (tri.points[2] - tri.points[0]).xyz));
 		
 		tri.normals[0] = vec4(normal, 1.0);
 		tri.normals[1] = vec4(normal, 1.0);
 		tri.normals[2] = vec4(normal, 1.0);
-		
 		
 		triangles[atomicCounterIncrement(TriCounter)] = tri;
 	}

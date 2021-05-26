@@ -23,8 +23,7 @@ public:
 	{
 		glGenBuffers(1, &m_Handle);
 		Bind();
-		glBufferData(BufferType, m_Count * sizeof(ComponentType), data.data(),
-			GL_STATIC_DRAW);
+		glBufferData(BufferType, m_Count * sizeof(ComponentType), data.data(), Usage);
 	}
 
 	~Buffer() { glDeleteBuffers(1, &m_Handle); }
@@ -33,7 +32,10 @@ public:
 
 	inline unsigned int GetCount() const { return m_Count; }
 	inline unsigned int GetBufferType() const { return BufferType; }
-	inline unsigned int GetComponentType() const { return GetComponentType<ComponentType>(); }
+	inline unsigned int GetComponentType() const
+	{
+		return GetComponentType<ComponentType>();
+	}
 	inline unsigned int GetHandle() const { return m_Handle; }
 
 private:

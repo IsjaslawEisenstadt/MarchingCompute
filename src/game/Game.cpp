@@ -41,12 +41,33 @@ struct TriEntry
 	int edge[16];
 };
 
+struct DrawArraysIndirectCommand
+{
+	unsigned int count;
+	unsigned int instanceCount;
+	unsigned int first;
+	unsigned int baseInstance;
+};
+
+// TODO: use glBufferStorage for SSBOs (maybe by inheriting from Buffer?)
 using TriangleBuffer = Buffer<GL_SHADER_STORAGE_BUFFER, Triangle, GL_DYNAMIC_COPY>;
 using FloatBuffer = Buffer<GL_SHADER_STORAGE_BUFFER, float, GL_DYNAMIC_DRAW>;
 using AtomicCounter = Buffer<GL_ATOMIC_COUNTER_BUFFER, unsigned, GL_DYNAMIC_DRAW>;
 using TriLUTBuffer = Buffer<GL_SHADER_STORAGE_BUFFER, int[16], GL_STATIC_DRAW>;
+using IndirectBuffer =
+	Buffer<GL_DRAW_INDIRECT_BUFFER, DrawArraysIndirectCommand, GL_DYNAMIC_COPY>;
 
 #define MC_DIM 50
+
+class VoxelMesh
+{
+	std::shared_ptr<Shader> computeShader;
+	std::shared_ptr<Material> material;
+	std::shared_ptr<TriLUTBuffer> triLUTBuffer;
+
+public:
+	VoxelMesh() {}
+};
 
 class MarchingCubesGame : public FirstPersonGame
 {
@@ -66,10 +87,10 @@ class MarchingCubesGame : public FirstPersonGame
 	std::shared_ptr<AtomicCounter> atomicCounter;
 	std::shared_ptr<FloatBuffer> densityBuffer;
 	std::shared_ptr<TriLUTBuffer> triLUTBuffer;
+	std::shared_ptr<IndirectBuffer> indirectBuffer;
 	std::shared_ptr<Shader> computeShader;
+	std::shared_ptr<Shader> indirectCounter;
 	std::shared_ptr<Shader> mcShader;
-
-	unsigned int vCount = 0;
 
 public:
 	MarchingCubesGame(unsigned int width, unsigned int height, const std::string& title)
@@ -82,9 +103,11 @@ public:
 		triangleBuffer =
 			std::make_shared<TriangleBuffer>(MC_DIM * MC_DIM * MC_DIM, nullptr);
 
-		atomicCounter = std::make_shared<AtomicCounter>(1, &vCount);
+		unsigned int counter = 0;
+		atomicCounter = std::make_shared<AtomicCounter>(1, &counter);
 
 		computeShader = std::make_shared<Shader>("shaders/MarchingCubes.comp");
+		indirectCounter = std::make_shared<Shader>("shaders/IndirectCounter.comp");
 		mcShader = std::make_shared<Shader>("shaders/MarchingCubes2.vert",
 			"shaders/MarchingCubes2.frag");
 
@@ -122,21 +145,24 @@ public:
 		glUnmapBuffer(densityBuffer->GetBufferType());
 
 		triLUTBuffer = std::make_shared<TriLUTBuffer>(256, triangleLUT);
+		
+		DrawArraysIndirectCommand cmd { 0, 1, 0, 0};
+		indirectBuffer = std::make_shared<IndirectBuffer>(1, &cmd);
 
 		glBindBufferBase(triangleBuffer->GetBufferType(), 4, triangleBuffer->GetHandle());
 		glBindBufferBase(densityBuffer->GetBufferType(), 5, densityBuffer->GetHandle());
 		glBindBufferBase(atomicCounter->GetBufferType(), 6, atomicCounter->GetHandle());
 		glBindBufferBase(triLUTBuffer->GetBufferType(), 7, triLUTBuffer->GetHandle());
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, indirectBuffer->GetHandle());
 		computeShader->Bind();
 		computeShader->SetFloat("isoValue", 0.0f);
 		glDispatchCompute(MC_DIM / 10, MC_DIM / 10, MC_DIM / 10);
-
-		atomicCounter->Bind();
-		vCount = *(unsigned int*) glMapBufferRange(atomicCounter->GetBufferType(), 0,
-			sizeof(GLuint), GL_MAP_READ_BIT);
-		glUnmapBuffer(atomicCounter->GetBufferType());
-
-		std::cout << vCount << '\n';
+		
+		
+		glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT);
+		indirectCounter->Bind();
+		glDispatchCompute(1, 1, 1);
+		glMemoryBarrier(GL_COMMAND_BARRIER_BIT);
 	}
 
 	void Update(float delta) override
@@ -223,8 +249,8 @@ private:
 		mcShader->SetVec3("dirLight.specular", glm::vec3(0.6f, 0.6f, 0.6f));
 
 		triangleBuffer->Bind();
-
-		glDrawArrays(GL_TRIANGLES, 0, vCount * 3);
+		indirectBuffer->Bind();
+		glDrawArraysIndirect(GL_TRIANGLES, 0);
 	}
 
 	void ShowStats()
