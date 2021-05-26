@@ -78,7 +78,7 @@ public:
 	{
 		m_TerrainMaterial = std::make_shared<Material>(std::make_shared<Shader>(
 			"shaders/MarchingCubes.vert", "shaders/MarchingCubes.frag"));
-		
+
 		triangleBuffer =
 			std::make_shared<TriangleBuffer>(MC_DIM * MC_DIM * MC_DIM, nullptr);
 
@@ -89,13 +89,11 @@ public:
 			"shaders/MarchingCubes2.frag");
 
 		m_NoiseConfig.ApplyConfig(m_Noise);
-
+		
 		densityBuffer = std::make_shared<FloatBuffer>(MC_DIM * MC_DIM * MC_DIM, nullptr);
-
 		densityBuffer->Bind();
-		float* densities = (float*) glMapBufferRange(densityBuffer->GetBufferType(), 0,
-			MC_DIM * MC_DIM * MC_DIM, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
-
+		float* densities =
+			(float*) glMapBuffer(densityBuffer->GetBufferType(), GL_WRITE_ONLY);
 		for (int x = 1; x < MC_DIM - 1; ++x)
 		{
 			for (int y = 1; y < MC_DIM - 1; ++y)
@@ -111,7 +109,16 @@ public:
 				}
 			}
 		}
-		
+		for (int x = 0; x < MC_DIM; x += MC_DIM - 1)
+		{
+			for (int y = 0; y < MC_DIM; y += MC_DIM - 1)
+			{
+				for (int z = 0; z < MC_DIM; z += MC_DIM - 1)
+				{
+					densities[x + (y * MC_DIM) + (z * MC_DIM * MC_DIM)] = 0.0f;
+				}
+			}
+		}
 		glUnmapBuffer(densityBuffer->GetBufferType());
 
 		triLUTBuffer = std::make_shared<TriLUTBuffer>(256, triangleLUT);
@@ -123,7 +130,6 @@ public:
 		computeShader->Bind();
 		computeShader->SetFloat("isoValue", 0.0f);
 		glDispatchCompute(MC_DIM / 10, MC_DIM / 10, MC_DIM / 10);
-		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
 		atomicCounter->Bind();
 		vCount = *(unsigned int*) glMapBufferRange(atomicCounter->GetBufferType(), 0,
