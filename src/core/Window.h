@@ -22,8 +22,6 @@ class Window
 {
 	GLFWwindow *m_Window;
 	bool m_VSync = true;
-	bool m_FrameCapEnabled = false;
-	unsigned int m_FrameCap = 144;
 	std::vector<std::reference_wrapper<InputListener>> listeners;
 
 public:
@@ -46,10 +44,6 @@ public:
 
 	void SetVSyncEnabled(bool enabled);
 	[[nodiscard]] inline bool IsVSyncEnabled() const { return m_VSync; }
-	inline void SetFrameCapEnabled(bool enabled) { m_FrameCapEnabled = enabled; }
-	[[nodiscard]] inline bool IsFrameCapEnabled() const { return m_FrameCapEnabled; }
-	inline void SetFrameCap(unsigned int frameCap) { m_FrameCap = frameCap; }
-	[[nodiscard]] inline unsigned int GetFrameCap() const { return m_FrameCap; }
 
 	[[nodiscard]] inline bool IsCursorEnabled() const
 	{

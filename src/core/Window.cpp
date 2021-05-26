@@ -3,10 +3,9 @@
 
 Window::Window(unsigned int width, unsigned int height, const std::string &title)
 {
-	glfwSetErrorCallback([](int error, const char* description){
-		std::cerr << "GLFW error " << error << ": " << description << '\n';
-	});
-	
+	glfwSetErrorCallback([](int error, const char *description)
+		{ std::cerr << "GLFW error " << error << ": " << description << '\n'; });
+
 	if (!glfwInit())
 	{
 		std::cerr << "GLFW init failed\n";
@@ -33,12 +32,12 @@ Window::Window(unsigned int width, unsigned int height, const std::string &title
 		std::cerr << "Failed to initialize OpenGL Loader\n";
 		abort();
 	}
-	
+
 	int profileBit;
 	glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &profileBit);
-	
+
 	std::cout << "OpenGL Version " << GLVersion.major << "." << GLVersion.minor << " "
-	          << (profileBit == 1 ? "Core" : "Compatibility") << '\n';
+			  << (profileBit == 1 ? "Core" : "Compatibility") << '\n';
 
 	SetVSyncEnabled(m_VSync);
 	SetCursorEnabled(true);
@@ -48,7 +47,8 @@ Window::Window(unsigned int width, unsigned int height, const std::string &title
 	glfwSetKeyCallback(m_Window,
 		[](GLFWwindow *window, int key, int scancode, int action, int mods)
 		{
-			for (auto &listener : ((Window *)glfwGetWindowUserPointer(window))->listeners)
+			for (auto &listener :
+				((Window *) glfwGetWindowUserPointer(window))->listeners)
 			{
 				listener.get().OnKeyInput(key, scancode, action, mods);
 			}
@@ -56,7 +56,8 @@ Window::Window(unsigned int width, unsigned int height, const std::string &title
 	glfwSetMouseButtonCallback(m_Window,
 		[](GLFWwindow *window, int button, int action, int mods)
 		{
-			for (auto &listener : ((Window *)glfwGetWindowUserPointer(window))->listeners)
+			for (auto &listener :
+				((Window *) glfwGetWindowUserPointer(window))->listeners)
 			{
 				listener.get().OnMouseButtonInput(button, action, mods);
 			}
@@ -64,7 +65,8 @@ Window::Window(unsigned int width, unsigned int height, const std::string &title
 	glfwSetCursorPosCallback(m_Window,
 		[](GLFWwindow *window, double xpos, double ypos)
 		{
-			for (auto &listener : ((Window *)glfwGetWindowUserPointer(window))->listeners)
+			for (auto &listener :
+				((Window *) glfwGetWindowUserPointer(window))->listeners)
 			{
 				listener.get().OnMouseMotionInput(xpos, ypos);
 			}
@@ -72,7 +74,8 @@ Window::Window(unsigned int width, unsigned int height, const std::string &title
 	glfwSetScrollCallback(m_Window,
 		[](GLFWwindow *window, double xoffset, double yoffset)
 		{
-			for (auto &listener : ((Window *)glfwGetWindowUserPointer(window))->listeners)
+			for (auto &listener :
+				((Window *) glfwGetWindowUserPointer(window))->listeners)
 			{
 				listener.get().OnScrollInput(xoffset, yoffset);
 			}
@@ -88,8 +91,8 @@ void Window::AddInputListener(InputListener &inputListener)
 
 void Window::RemoveInputListener(InputListener &inputListener)
 {
-	//listeners.erase(std::remove(listeners.begin(), listeners.end(), inputListener),
-		//listeners.end());
+	// listeners.erase(std::remove(listeners.begin(), listeners.end(), inputListener),
+	// listeners.end());
 }
 
 void Window::SetVSyncEnabled(bool enabled)
@@ -102,11 +105,4 @@ void Window::SetCursorEnabled(bool enabled)
 {
 	glfwSetInputMode(m_Window, GLFW_CURSOR,
 		enabled ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
-	/*
-	if (glfwRawMouseMotionSupported())
-	{
-		glfwSetInputMode(m_Window, GLFW_RAW_MOUSE_MOTION,
-			enabled ? GLFW_FALSE : GLFW_TRUE);
-	}
-	*/
 }

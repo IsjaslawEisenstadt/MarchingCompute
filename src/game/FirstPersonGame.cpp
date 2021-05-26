@@ -35,7 +35,7 @@ void FirstPersonGame::Update(float delta)
 		move = glm::normalize(m_CameraMoveDirection);
 	}
 	m_Camera->Move(move * delta * 35.0f);
-	m_Camera->Rotate(glm::vec3(m_MouseDelta.y, m_MouseDelta.x, 0.0f) * delta * 50.0f);
+	m_Camera->Rotate(glm::vec3(m_MouseDelta.y, m_MouseDelta.x, 0.0f) * 0.25f);
 	m_MouseDelta = glm::vec2(0.0f);
 
 	m_View = m_Camera->GetView();

@@ -15,19 +15,6 @@ void BaseGame::Start()
 		float deltaTime = time - lastTime;
 		lastTime = time;
 
-		if (m_Window->IsFrameCapEnabled())
-		{
-			float targetFrameTime = 1.0f / m_Window->GetFrameCap();
-			float deltaCapTime = time - lastCapTime;
-			if (deltaCapTime < targetFrameTime)
-			{
-				long sleepTime =
-					static_cast<long>((targetFrameTime - deltaCapTime) * 1000.0f);
-				std::this_thread::sleep_for(std::chrono::milliseconds(sleepTime));
-			}
-			lastCapTime = m_Window->GetTime();
-		}
-
 		m_Window->PollInput();
 		ImStartFrame();
 		Update(deltaTime);

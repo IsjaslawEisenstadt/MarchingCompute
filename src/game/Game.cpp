@@ -216,7 +216,6 @@ private:
 		mcShader->SetVec3("dirLight.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
 		mcShader->SetVec3("dirLight.specular", glm::vec3(0.6f, 0.6f, 0.6f));
 
-		// mcShader->SetMat4("model", m_Projection);
 		triangleBuffer->Bind();
 
 		glDrawArrays(GL_TRIANGLES, 0, vCount * 3);
