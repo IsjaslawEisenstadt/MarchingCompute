@@ -16,8 +16,8 @@ void Renderer::Init()
 	glEnable(GL_MULTISAMPLE);
 	glEnable(GL_DEPTH_TEST);
 	
-	//glEnable(GL_CULL_FACE);
-	//glFrontFace(GL_CCW);
+	glEnable(GL_CULL_FACE);
+	glFrontFace(GL_CW);
 	
 	// glViewport(0, 0, width, height);
 }

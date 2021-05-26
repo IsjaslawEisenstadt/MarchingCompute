@@ -33,6 +33,7 @@ struct Point
 struct Triangle
 {
 	Point points[3];
+	Point normals[3];
 };
 
 struct TriEntry
@@ -45,7 +46,7 @@ using FloatBuffer = Buffer<GL_SHADER_STORAGE_BUFFER, float, GL_DYNAMIC_DRAW>;
 using AtomicCounter = Buffer<GL_ATOMIC_COUNTER_BUFFER, unsigned, GL_DYNAMIC_DRAW>;
 using TriLUTBuffer = Buffer<GL_SHADER_STORAGE_BUFFER, int[16], GL_STATIC_DRAW>;
 
-#define MC_DIM 10
+#define MC_DIM 50
 
 class MarchingCubesGame : public FirstPersonGame
 {
@@ -77,25 +78,7 @@ public:
 	{
 		m_TerrainMaterial = std::make_shared<Material>(std::make_shared<Shader>(
 			"shaders/MarchingCubes.vert", "shaders/MarchingCubes.frag"));
-
-		int workGroupCount[3];
-		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &workGroupCount[0]);
-		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &workGroupCount[1]);
-		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &workGroupCount[2]);
-		printf("max global (total) work group counts x:%i y:%i z:%i\n", workGroupCount[0],
-			workGroupCount[1], workGroupCount[2]);
-
-		int workGroupSize[3];
-		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &workGroupSize[0]);
-		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &workGroupSize[1]);
-		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &workGroupSize[2]);
-		printf("max local (in one shader) work group sizes x:%i y:%i z:%i\n",
-			workGroupSize[0], workGroupSize[1], workGroupSize[2]);
-
-		int workGroupInvocations;
-		glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &workGroupInvocations);
-		printf("max local work group invocations %i\n", workGroupInvocations);
-
+		
 		triangleBuffer =
 			std::make_shared<TriangleBuffer>(MC_DIM * MC_DIM * MC_DIM, nullptr);
 
@@ -106,12 +89,18 @@ public:
 			"shaders/MarchingCubes2.frag");
 
 		m_NoiseConfig.ApplyConfig(m_Noise);
-		float* densities = new float[MC_DIM * MC_DIM * MC_DIM];
-		for (int x = 0; x < MC_DIM; ++x)
+
+		densityBuffer = std::make_shared<FloatBuffer>(MC_DIM * MC_DIM * MC_DIM, nullptr);
+
+		densityBuffer->Bind();
+		float* densities = (float*) glMapBufferRange(densityBuffer->GetBufferType(), 0,
+			MC_DIM * MC_DIM * MC_DIM, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+
+		for (int x = 1; x < MC_DIM - 1; ++x)
 		{
-			for (int y = 0; y < MC_DIM; ++y)
+			for (int y = 1; y < MC_DIM - 1; ++y)
 			{
-				for (int z = 0; z < MC_DIM; ++z)
+				for (int z = 1; z < MC_DIM - 1; ++z)
 				{
 					float xf = x;
 					float yf = y;
@@ -123,10 +112,7 @@ public:
 			}
 		}
 		
-		std::cout << "densities done\n";
-
-		densityBuffer =
-			std::make_shared<FloatBuffer>(MC_DIM * MC_DIM * MC_DIM, densities);
+		glUnmapBuffer(densityBuffer->GetBufferType());
 
 		triLUTBuffer = std::make_shared<TriLUTBuffer>(256, triangleLUT);
 
@@ -221,6 +207,15 @@ private:
 		mcShader->Bind();
 		mcShader->SetMat4("projection", m_Projection);
 		mcShader->SetMat4("view", m_View);
+
+		mcShader->SetVec3("material.objectColor", glm::vec3(1.0f, 0.65f, 0.0f));
+		mcShader->SetFloat("material.shininess", 16.0f);
+		mcShader->SetVec3("viewPos", m_Camera->GetPosition());
+		mcShader->SetVec3("dirLight.direction", glm::vec3(0.0f, 1.0f, 0.0f));
+		mcShader->SetVec3("dirLight.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
+		mcShader->SetVec3("dirLight.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
+		mcShader->SetVec3("dirLight.specular", glm::vec3(0.6f, 0.6f, 0.6f));
+
 		// mcShader->SetMat4("model", m_Projection);
 		triangleBuffer->Bind();
 

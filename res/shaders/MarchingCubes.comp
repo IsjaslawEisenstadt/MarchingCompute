@@ -1,11 +1,12 @@
 #version 460 core
 
-const int leftCornerFromEdge[12] = {0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3};
-const int rightCornerFromEdge[12] = {1, 2, 3, 0, 5, 6, 7, 4, 4, 5, 6, 7};
+const int leftCornerFromEdge[12] = { 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3 };
+const int rightCornerFromEdge[12] = { 1, 2, 3, 0, 5, 6, 7, 4, 4, 5, 6, 7 };
 
 struct Triangle
 {
 	vec4 points[3];
+	vec4 normals[3];
 };
 
 layout(std430, binding = 4) writeonly buffer TriangleBuffer
@@ -87,6 +88,14 @@ void main()
 		tri.points[0] = interpolateVerts(cell[a0], cell[b0]);
 		tri.points[1] = interpolateVerts(cell[a1], cell[b1]);
 		tri.points[2] = interpolateVerts(cell[a2], cell[b2]);
+		
+		vec3 normal = normalize(
+				cross((tri.points[1] - tri.points[0]).xyz, (tri.points[2] - tri.points[0]).xyz));
+		
+		tri.normals[0] = vec4(normal, 1.0);
+		tri.normals[1] = vec4(normal, 1.0);
+		tri.normals[2] = vec4(normal, 1.0);
+		
 		
 		triangles[atomicCounterIncrement(TriCounter)] = tri;
 	}

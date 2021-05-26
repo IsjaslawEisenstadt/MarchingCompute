@@ -13,12 +13,12 @@ class FirstPersonGame : public BaseGame
 	std::shared_ptr<Primitive> m_Billboard;
 	std::shared_ptr<Primitive> m_Origin;
 
-	std::shared_ptr<Camera> m_Camera;
 	glm::vec3 m_CameraMoveDirection{0.0f};
 	glm::vec2 m_MousePosition{0.0f};
 	glm::vec2 m_MouseDelta{0.0f};
 
 protected:
+	std::shared_ptr<Camera> m_Camera;
 	glm::mat4 m_Projection;
 	glm::mat4 m_View;
 	bool dirty = true;
