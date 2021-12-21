@@ -26,13 +26,11 @@ public:
 		: m_Handle(other.m_Handle),
 		  m_UniformLocationCache(std::move(other.m_UniformLocationCache))
 	{
-		std::cout << "move construct " << other.m_Handle << "\n";
 		other.m_Handle = 0;
 	}
 
 	Shader &operator=(Shader &&other)
 	{
-		std::cout << "move operator " << m_Handle << ", " << other.m_Handle << "\n";
 		DestroyShader();
 
 		m_Handle = other.m_Handle;
