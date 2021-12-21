@@ -38,8 +38,8 @@ list(APPEND PUBLIC_LIBRARIES stb_image)
 
 # IMGUI
 set(IMGUI_DIR libs/imgui)
-add_library(IMGUI STATIC)
-target_sources( IMGUI
+add_library(imgui STATIC)
+target_sources( imgui
         PRIVATE
         ${IMGUI_DIR}/imgui_demo.cpp
         ${IMGUI_DIR}/imgui_draw.cpp
@@ -49,12 +49,13 @@ target_sources( IMGUI
         ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
         ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
         )
-target_include_directories( IMGUI
+target_include_directories(imgui
         PUBLIC ${IMGUI_DIR}
         PUBLIC ${IMGUI_DIR}/backends
         PUBLIC libs/glfw/include
         )
-target_link_libraries(IMGUI PUBLIC GLAD glfw)
+target_link_libraries(imgui PUBLIC glad glfw)
+list(APPEND PRIVATE_LIBRARIES imgui)
 
 # ------------------
 # EXECUTABLE
@@ -69,7 +70,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC ${PUBLIC_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${PRIVATE_LIBRARIES})
 
 if (MSVC)
-    target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
+#    target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
 else ()
-    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Werror)
+ #   target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif ()
