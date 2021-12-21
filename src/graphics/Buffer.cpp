@@ -7,7 +7,7 @@ VertexArray::~VertexArray() { glDeleteVertexArrays(1, &m_Handle); }
 void VertexArray::Bind() const { glBindVertexArray(m_Handle); }
 
 void VertexArray::AddBuffer(const VertexBuffer &vb,
-	const VertexBufferLayout &layout) const
+							const VertexBufferLayout &layout) const
 {
 	Bind();
 	vb.Bind();
@@ -18,8 +18,12 @@ void VertexArray::AddBuffer(const VertexBuffer &vb,
 	{
 		const auto &element = elements[i];
 		glEnableVertexAttribArray(i);
-		glVertexAttribPointer(i, element.count, element.type, element.normalized,
-			layout.GetStride(), (const void *) offset);
+		glVertexAttribPointer(i,
+							  element.count,
+							  element.type,
+							  element.normalized,
+							  layout.GetStride(),
+							  (const void *) offset);
 		offset += element.count * VertexBufferElement::GetSizeOfType(element.type);
 	}
 }

@@ -2,10 +2,19 @@
 
 out vec4 FragColor;
 
-in vec4 ve;
-uniform mat4 model = mat4(1.0f);
-uniform vec4 modulate;
+in vec3 FragPos;
+in vec3 Normal;
 
-void main() {
-	FragColor = vec4(sin(ve.y), 1.0f, 1.0f, 1.0f) * modulate;
+uniform struct DirLight {
+	vec3 direction;
+	vec3 ambient;
+	vec3 diffuse;
+} dirLight;
+
+uniform vec3 objectColor;
+
+void main()
+{
+	float diffuse = max(dot(normalize(Normal), -dirLight.direction), 0.0);
+	FragColor = vec4((dirLight.ambient + dirLight.diffuse * diffuse) * objectColor, 1.0);
 }

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <vector>
 #include <cassert>
+#include <vector>
 
 #include <glad/glad.h>
 
@@ -12,23 +12,31 @@ class Buffer
 	unsigned int m_Count;
 
 public:
-	Buffer(unsigned int count, const void* data) : m_Count(count)
+	Buffer() { glGenBuffers(1, &m_Handle); }
+
+	Buffer(unsigned int count, const void *data) : Buffer() { BufferData(count, data); }
+
+	explicit Buffer(std::vector<ComponentType> data) : Buffer()
 	{
-		glGenBuffers(1, &m_Handle);
+		BufferData(data.size(), data.data());
+	}
+
+	void BufferData(unsigned int count, const void *data)
+	{
+		m_Count = count;
 		Bind();
 		glBufferData(BufferType, m_Count * sizeof(ComponentType), data, Usage);
 	}
 
-	explicit Buffer(std::vector<ComponentType> data) : m_Count(data.size())
+	~Buffer() { DestroyBuffer(); }
+
+	inline void Bind() const { glBindBuffer(BufferType, m_Handle); }
+
+	inline void DestroyBuffer()
 	{
-		glGenBuffers(1, &m_Handle);
-		Bind();
-		glBufferData(BufferType, m_Count * sizeof(ComponentType), data.data(), Usage);
+		glDeleteBuffers(1, &m_Handle);
+		m_Handle = 0;
 	}
-
-	~Buffer() { glDeleteBuffers(1, &m_Handle); }
-
-	void Bind() const { glBindBuffer(BufferType, m_Handle); }
 
 	inline unsigned int GetCount() const { return m_Count; }
 	inline unsigned int GetBufferType() const { return BufferType; }
@@ -91,10 +99,10 @@ public:
 	VertexBufferLayout() : m_Stride(0){};
 
 	template<typename T>
-	VertexBufferLayout& Push(unsigned int count);
+	VertexBufferLayout &Push(unsigned int count);
 
 	template<>
-	VertexBufferLayout& Push<float>(unsigned int count)
+	VertexBufferLayout &Push<float>(unsigned int count)
 	{
 		m_Elements.push_back({GL_FLOAT, count, GL_FALSE});
 		m_Stride += VertexBufferElement::GetSizeOfType(GL_FLOAT) * count;
@@ -102,7 +110,7 @@ public:
 	}
 
 	template<>
-	VertexBufferLayout& Push<unsigned int>(unsigned int count)
+	VertexBufferLayout &Push<unsigned int>(unsigned int count)
 	{
 		m_Elements.push_back({GL_UNSIGNED_INT, count, GL_FALSE});
 		m_Stride += VertexBufferElement::GetSizeOfType(GL_UNSIGNED_INT) * count;
@@ -110,14 +118,14 @@ public:
 	}
 
 	template<>
-	VertexBufferLayout& Push<unsigned char>(unsigned int count)
+	VertexBufferLayout &Push<unsigned char>(unsigned int count)
 	{
 		m_Elements.push_back({GL_UNSIGNED_BYTE, count, GL_TRUE});
 		m_Stride += VertexBufferElement::GetSizeOfType(GL_UNSIGNED_BYTE) * count;
 		return *this;
 	}
 
-	[[nodiscard]] inline const std::vector<VertexBufferElement>& GetElements() const
+	[[nodiscard]] inline const std::vector<VertexBufferElement> &GetElements() const
 	{
 		return m_Elements;
 	}
@@ -134,5 +142,5 @@ public:
 	~VertexArray();
 
 	void Bind() const;
-	void AddBuffer(const VertexBuffer& vb, const VertexBufferLayout& layout) const;
+	void AddBuffer(const VertexBuffer &vb, const VertexBufferLayout &layout) const;
 };

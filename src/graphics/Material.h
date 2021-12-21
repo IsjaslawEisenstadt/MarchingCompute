@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Shader.h"
+#include <memory>
+#include <variant>
 
 #include <glm/glm.hpp>
 
-#include <variant>
-#include <memory>
+#include "Shader.h"
 
 class Material
 {
@@ -23,20 +23,35 @@ class Material
 
 	struct UniformValue
 	{
-		std::variant<int, float, glm::vec2, glm::vec3, glm::vec4, glm::mat2, glm::mat3,
-			glm::mat4>
+		std::variant<int,
+					 float,
+					 glm::vec2,
+					 glm::vec3,
+					 glm::vec4,
+					 glm::mat2,
+					 glm::mat3,
+					 glm::mat4>
 			value;
 		UniformType type;
 	};
 
-	std::shared_ptr<Shader> m_Shader;
+	Shader m_Shader;
 	std::unordered_map<std::string, UniformValue> m_Uniforms;
 
+	bool m_TwoSided = true;
+
 public:
-	explicit Material(std::shared_ptr<Shader> shader) : m_Shader(shader) {}
-	
+	Material() {}
+	explicit Material(Shader &&shader) : m_Shader(std::move(shader)) {}
+
 	void Bind();
-	
+
+	inline const Shader &GetShader() const { return m_Shader; }
+	inline void SetShader(Shader &&shader) { m_Shader = std::move(shader); }
+
+	inline bool IsTwoSided() const { return m_TwoSided; }
+	inline void SetTwoSided(bool twoSided) { m_TwoSided = twoSided; }
+
 	template<typename T>
 	[[maybe_unused]] const T &GetUniform(const std::string &name) const
 	{

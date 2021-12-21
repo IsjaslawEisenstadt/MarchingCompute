@@ -1,9 +1,11 @@
 #include "Window.h"
+
 #include <iostream>
 
 Window::Window(unsigned int width, unsigned int height, const std::string &title)
 {
-	glfwSetErrorCallback([](int error, const char *description)
+	glfwSetErrorCallback(
+		[](int error, const char *description)
 		{ std::cerr << "GLFW error " << error << ": " << description << '\n'; });
 
 	if (!glfwInit())
@@ -45,37 +47,40 @@ Window::Window(unsigned int width, unsigned int height, const std::string &title
 	glfwSetWindowUserPointer(m_Window, this);
 
 	glfwSetKeyCallback(m_Window,
-		[](GLFWwindow *window, int key, int scancode, int action, int mods)
-		{
-			for (auto &listener :
-				((Window *) glfwGetWindowUserPointer(window))->listeners)
-			{
-				listener.get().OnKeyInput(key, scancode, action, mods);
-			}
-		});
-	glfwSetMouseButtonCallback(m_Window,
+					   [](GLFWwindow *window, int key, int scancode, int action, int mods)
+					   {
+						   for (auto &listener :
+								((Window *) glfwGetWindowUserPointer(window))->listeners)
+						   {
+							   listener.get().OnKeyInput(key, scancode, action, mods);
+						   }
+					   });
+	glfwSetMouseButtonCallback(
+		m_Window,
 		[](GLFWwindow *window, int button, int action, int mods)
 		{
 			for (auto &listener :
-				((Window *) glfwGetWindowUserPointer(window))->listeners)
+				 ((Window *) glfwGetWindowUserPointer(window))->listeners)
 			{
 				listener.get().OnMouseButtonInput(button, action, mods);
 			}
 		});
-	glfwSetCursorPosCallback(m_Window,
+	glfwSetCursorPosCallback(
+		m_Window,
 		[](GLFWwindow *window, double xpos, double ypos)
 		{
 			for (auto &listener :
-				((Window *) glfwGetWindowUserPointer(window))->listeners)
+				 ((Window *) glfwGetWindowUserPointer(window))->listeners)
 			{
 				listener.get().OnMouseMotionInput(xpos, ypos);
 			}
 		});
-	glfwSetScrollCallback(m_Window,
+	glfwSetScrollCallback(
+		m_Window,
 		[](GLFWwindow *window, double xoffset, double yoffset)
 		{
 			for (auto &listener :
-				((Window *) glfwGetWindowUserPointer(window))->listeners)
+				 ((Window *) glfwGetWindowUserPointer(window))->listeners)
 			{
 				listener.get().OnScrollInput(xoffset, yoffset);
 			}
@@ -103,6 +108,7 @@ void Window::SetVSyncEnabled(bool enabled)
 
 void Window::SetCursorEnabled(bool enabled)
 {
-	glfwSetInputMode(m_Window, GLFW_CURSOR,
-		enabled ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(m_Window,
+					 GLFW_CURSOR,
+					 enabled ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
 }

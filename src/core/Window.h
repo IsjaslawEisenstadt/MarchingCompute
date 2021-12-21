@@ -1,16 +1,19 @@
 #pragma once
 
-#include <glad/glad.h>
-
-#include "graphics/Renderer.h"
-#include "InputListener.h"
-
-#include <GLFW/glfw3.h>
 #include <chrono>
 #include <optional>
 #include <string>
 #include <thread>
 #include <unordered_map>
+
+// glad must be included before glfw
+/* clang-format off */
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+/* clang-format on */
+
+#include "InputListener.h"
+#include "graphics/Renderer.h"
 
 enum class InputType
 {
@@ -40,7 +43,7 @@ public:
 	inline void PollInput() const { glfwPollEvents(); }
 
 	void AddInputListener(InputListener &inputListener);
-	inline void RemoveInputListener(InputListener &inputListener);
+	void RemoveInputListener(InputListener &inputListener);
 
 	void SetVSyncEnabled(bool enabled);
 	[[nodiscard]] inline bool IsVSyncEnabled() const { return m_VSync; }
@@ -50,7 +53,7 @@ public:
 		return glfwGetInputMode(m_Window, GLFW_CURSOR) == GLFW_CURSOR_NORMAL;
 	}
 	void SetCursorEnabled(bool enabled);
-	
+
 	inline glm::vec2 GetMousePosition() const
 	{
 		double mx, my;

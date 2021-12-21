@@ -1,45 +1,44 @@
 #pragma once
 
-#include "Material.h"
-#include "Buffer.h"
-
 #include <iostream>
 #include <optional>
 
+#include "Buffer.h"
+#include "Material.h"
+
 class Primitive
 {
-	VertexBuffer vertexBuffer;
-	std::optional<IndexBuffer> indexBuffer;
-	const VertexArray vertexArray;
-	const std::shared_ptr<Material> material;
+	VertexBuffer m_VertexBuffer;
+	std::optional<IndexBuffer> m_IndexBuffer;
+	const VertexArray m_VertexArray;
+	std::shared_ptr<Material> m_Material;
 
 	unsigned int mode = GL_TRIANGLES;
 
 public:
+	Primitive();
+
 	[[maybe_unused]] Primitive(const std::vector<float> &vertices,
-		const VertexBufferLayout &layout, std::shared_ptr<Material> material);
+							   const VertexBufferLayout &layout,
+							   std::shared_ptr<Material> material);
 
 	Primitive(const std::vector<float> &vertices,
-		const std::vector<unsigned int> &indices, const VertexBufferLayout &layout,
-		std::shared_ptr<Material> material);
+			  const std::vector<unsigned int> &indices,
+			  const VertexBufferLayout &layout,
+			  std::shared_ptr<Material> material);
 
 	void Bind() const;
-	void Draw(glm::mat4 model = glm::mat4(1.0f)) const;
+	void Draw(glm::mat4 model = glm::mat4(1.0f));
 
-	inline void SetVertices(const std::vector<float> &vertices)
-	{
-		vertexBuffer = VertexBuffer(
-			static_cast<unsigned int>(vertices.size() * sizeof(float)), vertices.data());
-	}
+	void SetVertices(const std::vector<float> &vertices,
+					 const VertexBufferLayout &layout);
+	void SetIndices(const std::vector<unsigned int> &indices);
 
-	inline void SetIndices(const std::vector<unsigned int> &indices)
-	{
-		indexBuffer = IndexBuffer(
-			static_cast<unsigned int>(indices.size() * sizeof(unsigned)), indices.data());
-	}
-
+	inline unsigned int GetMode() const { return mode; }
 	[[maybe_unused]] inline void SetMode(unsigned int newMode) { mode = newMode; }
-	inline std::shared_ptr<Material> GetMaterial() const { return material; }
+
+	inline void SetMaterial(std::shared_ptr<Material> material) { m_Material = material; }
+	inline std::shared_ptr<Material> GetMaterial() const { return m_Material; }
 };
 
 /*

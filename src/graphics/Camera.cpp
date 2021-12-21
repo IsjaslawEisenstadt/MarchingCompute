@@ -1,7 +1,10 @@
 #include "Camera.h"
 
 Camera::Camera(glm::vec3 position, glm::vec3 worldUp, float yaw, float pitch)
-	: position(position), worldUp(worldUp), yaw(yaw), pitch(pitch)
+	: position(position),
+	  worldUp(worldUp),
+	  yaw(yaw),
+	  pitch(pitch)
 {
 	UpdateVectors();
 }

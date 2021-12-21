@@ -1,8 +1,8 @@
 #include "Texture.h"
 
-#include <stb_image.h>
-
 #include <iostream>
+
+#include <stb_image.h>
 
 Texture::Texture(const std::string &path, TextureParams params) : m_Type(GL_TEXTURE_2D)
 {
@@ -18,8 +18,15 @@ Texture::Texture(const std::string &path, TextureParams params) : m_Type(GL_TEXT
 	unsigned char *data = stbi_load(path.c_str(), &m_Width, &m_Height, &m_NumChannels, 0);
 	if (data)
 	{
-		glTexImage2D(m_Type, 0, GL_RGB, m_Width, m_Height, 0, GL_RGB, GL_UNSIGNED_BYTE,
-			data);
+		glTexImage2D(m_Type,
+					 0,
+					 GL_RGB,
+					 m_Width,
+					 m_Height,
+					 0,
+					 GL_RGB,
+					 GL_UNSIGNED_BYTE,
+					 data);
 		if (params.mipmap)
 		{
 			glGenerateMipmap(m_Type);

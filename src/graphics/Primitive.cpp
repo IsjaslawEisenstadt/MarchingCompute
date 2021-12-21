@@ -1,41 +1,60 @@
 #include "Primitive.h"
 
-Primitive::Primitive(const std::vector<float>& vertices, const VertexBufferLayout& layout,
-	std::shared_ptr<Material> material)
-	: vertexBuffer(vertices), vertexArray(), material(material)
+Primitive::Primitive() {}
+
+Primitive::Primitive(const std::vector<float> &vertices,
+					 const VertexBufferLayout &layout,
+					 std::shared_ptr<Material> material)
+	: m_Material(material)
 {
-	vertexArray.AddBuffer(vertexBuffer, layout);
+	SetVertices(vertices, layout);
 }
 
-Primitive::Primitive(const std::vector<float>& vertices,
-	const std::vector<unsigned int>& indices, const VertexBufferLayout& layout,
-	std::shared_ptr<Material> material)
-	: vertexBuffer(static_cast<unsigned int>(vertices.size()), vertices.data()),
-	  indexBuffer(std::make_optional<IndexBuffer>(
-		  static_cast<unsigned int>(indices.size()), indices.data())),
-	  vertexArray(), material(material)
+Primitive::Primitive(const std::vector<float> &vertices,
+					 const std::vector<unsigned int> &indices,
+					 const VertexBufferLayout &layout,
+					 std::shared_ptr<Material> material)
+	: m_Material(material)
 {
-	vertexArray.AddBuffer(vertexBuffer, layout);
+	SetVertices(vertices, layout);
+	SetIndices(indices);
 }
 
 void Primitive::Bind() const
 {
-	vertexArray.Bind();
-	if (indexBuffer)
-		indexBuffer->Bind();
+	m_VertexArray.Bind();
+	if (m_IndexBuffer)
+		m_IndexBuffer->Bind();
 }
 
-void Primitive::Draw(glm::mat4 model) const
+void Primitive::Draw(glm::mat4 model)
 {
-	material->SetUniform("model", model);
-	material->Bind();
+	m_Material->SetUniform("model", model);
+	m_Material->Bind();
 	Bind();
-	if (indexBuffer)
+	if (m_IndexBuffer)
 	{
-		glDrawElements(mode, indexBuffer->GetCount(), indexBuffer->GetComponentType(), nullptr);
+		glDrawElements(mode,
+					   m_IndexBuffer->GetCount(),
+					   m_IndexBuffer->GetComponentType(),
+					   nullptr);
 	}
 	else
 	{
-		glDrawArrays(mode, 0, vertexBuffer.GetCount());
+		glDrawArrays(mode, 0, m_VertexBuffer.GetCount());
 	}
+}
+
+void Primitive::SetVertices(const std::vector<float> &vertices,
+							const VertexBufferLayout &layout)
+{
+	m_VertexBuffer.BufferData(static_cast<unsigned int>(vertices.size()),
+							  vertices.data());
+	m_VertexArray.AddBuffer(m_VertexBuffer, layout);
+}
+
+void Primitive::SetIndices(const std::vector<unsigned int> &indices)
+{
+	m_IndexBuffer = IndexBuffer(static_cast<unsigned int>(indices.size()),
+								indices.data());
 }

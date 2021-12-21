@@ -1,19 +1,31 @@
 #include "Shader.h"
+
+#include <cassert>
+#include <fstream>
+#include <iostream>
+#include <optional>
+#include <stdexcept>
+
 #include "core/FileSystem.h"
 
-#include <iostream>
-#include <cassert>
-#include <stdexcept>
-#include <fstream>
-#include <optional>
+Shader::Shader() {}
 
-Shader::Shader(const std::string &vsPath, const std::string &fsPath)
+Shader::Shader(const std::string &vsPath, const std::string &fsPath) : Shader()
 {
-	unsigned int vs_handle = Compile(vsPath, GL_VERTEX_SHADER);
-	unsigned int fs_handle = Compile(fsPath, GL_FRAGMENT_SHADER);
+	LoadShader(vsPath, fsPath);
+}
+
+Shader::Shader(const std::string &csPath) : Shader() { LoadShader(csPath); }
+
+void Shader::LoadShader(const std::string &vsPath, const std::string &fsPath)
+{
+	DestroyShader();
 
 	m_Handle = glCreateProgram();
 	assert(m_Handle);
+
+	unsigned int vs_handle = Compile(vsPath, GL_VERTEX_SHADER);
+	unsigned int fs_handle = Compile(fsPath, GL_FRAGMENT_SHADER);
 
 	glAttachShader(m_Handle, vs_handle);
 	glAttachShader(m_Handle, fs_handle);
@@ -26,16 +38,26 @@ Shader::Shader(const std::string &vsPath, const std::string &fsPath)
 	glGetProgramiv(m_Handle, GL_LINK_STATUS, &linked);
 	if (!linked)
 	{
+		int maxLength = 0;
+		glGetProgramiv(m_Handle, GL_INFO_LOG_LENGTH, &maxLength);
+		std::string error;
+		error.resize(maxLength);
+		glGetProgramInfoLog(m_Handle, maxLength, &maxLength, error.data());
 		std::cerr << "Failed to link vertex shader (" << vsPath
-				  << ") and fragment shader (" << fsPath << ")\n";
+				  << ") and fragment shader (" << fsPath << ")\nMessage: " << error;
 		abort();
 	}
 
 	glValidateProgram(m_Handle);
 }
 
-Shader::Shader(const std::string &csPath)
+void Shader::LoadShader(const std::string &csPath)
 {
+	DestroyShader();
+
+	m_Handle = glCreateProgram();
+	assert(m_Handle);
+
 	unsigned int cs_handle = Compile(csPath, GL_COMPUTE_SHADER);
 
 	m_Handle = glCreateProgram();
@@ -55,8 +77,9 @@ Shader::Shader(const std::string &csPath)
 		std::string error;
 		error.resize(maxLength);
 		glGetProgramInfoLog(m_Handle, maxLength, &maxLength, error.data());
-		
-		std::cerr << "Failed to link compute shader from " << csPath << "\nMessage: " << error;
+
+		std::cerr << "Failed to link compute shader from " << csPath
+				  << "\nMessage: " << error;
 		abort();
 	}
 
@@ -86,14 +109,14 @@ unsigned int Shader::Compile(const std::string &path, const GLenum type)
 		std::string error;
 		error.resize(maxLength);
 		glGetShaderInfoLog(handle, maxLength, &maxLength, error.data());
-		
+
 		std::cerr << "Failed to compile shader from " << path << "\nMessage: " << error;
 		abort();
 	}
 	return handle;
 }
 
-Shader::~Shader() { glDeleteProgram(m_Handle); }
+Shader::~Shader() { DestroyShader(); }
 
 void Shader::Bind() const { glUseProgram(m_Handle); }
 
