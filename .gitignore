@@ -1,5 +1,6 @@
 build/
 .vs/
 .idea/
+.vscode/
 
 CMakeSettings.json
