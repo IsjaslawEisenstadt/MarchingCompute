@@ -31,11 +31,6 @@ list(APPEND PUBLIC_LIBRARIES glm)
 # GLFW
 add_subdirectory(libs/glfw)
 
-# STB_IMAGE
-add_library(stb_image STATIC libs/stb_image/stb_image.cpp)
-target_include_directories(stb_image PUBLIC libs/stb_image)
-list(APPEND PUBLIC_LIBRARIES stb_image)
-
 # IMGUI
 set(IMGUI_DIR libs/imgui)
 add_library(imgui STATIC)
