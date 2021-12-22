@@ -8,7 +8,7 @@ A compute shader implementation of marching cubes.
 
 This is a simple demo of my compute shader implementation of the marching cubes algorithm. The underlying methods are based on the article from [Paul Bourke] and the compute shader code is based on Sebastian Lague's marching cubes [implementation] in unity. 
 
-The voxel generation can be altered at runtime by a few parameters. These include a scale, isoValue and noise settings. The distance function samples from 3D noise, based on the current isoValue. Various noise settings are included in order to customize the voxel generation.
+The voxel generation can be altered at runtime by a few parameters. These include scale, isoValue and noise settings. The distance function samples from 3D noise, based on the current isoValue. Various noise settings are included in order to customize the voxel generation.
 
 ## Launch
 
