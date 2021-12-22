@@ -83,6 +83,7 @@ private:
 										| ImGuiWindowFlags_NoMove;
 
 		ImGui::SetNextWindowBgAlpha(0.15f);
+
 		ImGui::Begin("Performance Stats", 0, window_flags);
 		ImGui::Text("Frame Time: %.3f ms (%.1f FPS)",
 					1000.0f / ImGui::GetIO().Framerate,
@@ -109,10 +110,8 @@ private:
 			m_RefreshTerrain |=
 				ImGui::SliderFloat("Scale", &m_TerrainConfig.scale, 0.01f, 10.0f);
 
-			m_RefreshTerrain |= ImGui::SliderFloat("IsoValue",
-												   &m_TerrainConfig.isoValue,
-												   0.0f,
-												   1.0f);
+			m_RefreshTerrain |=
+				ImGui::SliderFloat("IsoValue", &m_TerrainConfig.isoValue, 0.0f, 1.0f);
 
 			ImGui::Text("Noise Settings");
 			static const char *items[] = {"OpenSimplex2",
@@ -138,6 +137,6 @@ private:
 
 int main()
 {
-	MarchingCubesGame(1920, 1080, "MyGame").Start();
+	MarchingCubesGame(1280, 720, "MyGame").Start();
 	return 0;
 }
